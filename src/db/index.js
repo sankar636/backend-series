@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { DB_NAME } from '../constants.js';
 
-
+//(1. DB Connection To Express) better approach to connect mongoDB with express
 const connectDB = async () => {
     try {
         const connectionInstance = await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`)
