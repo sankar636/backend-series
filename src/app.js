@@ -27,4 +27,18 @@ app.use(express.static("public"))
 
 app.use(cookieParser())
 
+
+
+// routes import 
+
+import userRouter from './routes/user.router.js'
+
+// routes declaration 
+app.use('/api/v1/user', userRouter)
+//it is --> http://8000/api/v1/user/register    (/register from user.router.js)
+
+// similarly  ref(1)
+// app.use('/user', userRouter)
+// it is  --> http://8000/user/login  (/login from user.router.js)
+
 export { app }

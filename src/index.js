@@ -2,8 +2,10 @@
 
 // import mongoose from 'mongoose';
 import connectDB from './db/index.js';
-import express from 'express'
-const app = express()
+import { app } from './app.js';
+
+// import express from 'express'
+// const app = express()           // this was already written in the 
 
 import dotenv from "dotenv";
 dotenv.config({
@@ -21,8 +23,6 @@ connectDB()
 .catch((error) => {
     console.log("MongoDB connection failed !!!", error)
 })
-
-
 
 
 
