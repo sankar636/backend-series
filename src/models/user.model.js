@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 
 const userSchema = new Schema({
-    name: {
+    username: {
         type: String,
         required: true,
         unique: true,
@@ -30,7 +30,7 @@ const userSchema = new Schema({
         required: true,
     },
     coverImage: {
-        type: string // cloudnairy url
+        type: String // cloudnairy url
     },
     whtchHistory: [
         {
@@ -39,7 +39,7 @@ const userSchema = new Schema({
         },
     ],
     password: {
-        type: string,
+        type: String,
         required: [true, "Password is required"]
     },
     refreshToken: {
