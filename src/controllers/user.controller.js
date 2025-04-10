@@ -56,7 +56,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // (5) Upload images to Cloudinary using utility function
     const avatar = await uploadOnCloudinary(avtarLocalPath); // Upload avatar image
-    const coverImage = await uploadOnCloudinary(avtarLocalPath); // (Optional) upload cover image
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath); // (Optional) upload cover image
 
     // Check if avatar was successfully uploaded
     if(!avatar){
