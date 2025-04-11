@@ -235,11 +235,171 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 })
 
+// change the password for user by giving the oldpassword
+const changeCurrentPassword = asyncHandler( async(req, res) => {
+
+    const {oldPassword, newPassword} = req.body
+    // Optional: Add confirmPassword check
+    // const { oldPassword, newPassword, confirmPassword } = req.body;
+    // if (newPassword !== confirmPassword) {
+    //     throw new ApiError(400, "Password confirmation failed");
+    // }
+    
+    if(!oldPassword || !newPassword){
+        throw new ApiError(401,"Password field should not be empth")
+    } 
+
+    const user = await User.findById(req.user?._id) // debug --> // Use `req.user._id` instead of `req.body._id` for security
+
+    const isPassword =await user.isPasswordCorrect(oldPassword)
+
+    if(!isPassword){
+        throw new ApiError(400,"Incorrect Password Entered")
+    }
+
+    user.password = newPassword  //debug --> // use `password` field, not `oldPassword`
+
+    await user.save({validateBeforeSave:false})
+
+    return res.status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            "Password changed successfully"
+        )
+    )
+})
+
+// get the current user
+const getCurrentUser = asyncHandler( async(req,res) => {
+    // // By now, req.user is already filled by the middleware
+    return res.status(200)
+    .json(
+        new ApiResponse(
+            200,
+            req.user,
+            "Current user fetched successfully"
+        )
+    )
+})
+
+// update Account Details
+const updateAccountDetails = asyncHandler( async(req, res) => {
+
+    const {fullname, email} = req.body
+    
+    if(!fullname || !email){
+        throw new ApiError(401,"fullname or email required")
+    }
+    
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullname: fullname,
+                email: email
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password")
+
+    return res.status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user,
+            "Account details updataed successfully"
+        )
+    )
+})
+
+const updateAvatar = asyncHandler( async(req, res) => {
+
+    // we will get avtar from req.file --> the file access by multer middleware 
+    const avtarLocalPath = req.file?.path
+
+    if(!avtarLocalPath){
+        throw new ApiError(400,"No avtar was found")
+    }
+
+    const avatar = await uploadOnCloudinary(avtarLocalPath)
+
+    if(!avatar.url){
+        throw new ApiError(400,"Error while uploading the avatar file")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password")
+
+    return res.status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user,
+            "avatar updated successfully"
+        )
+    )
+
+})
+const updateCoverImage = asyncHandler( async(req, res) => {
+
+    // we will get avtar from req.file --> the file access by multer middleware 
+    const coverImageLocalPath = req.file?.path
+
+    if(!coverImageLocalPath){
+        throw new ApiError(400,"No coverImage was found")
+    }
+
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+    if(!coverImage.url){
+        throw new ApiError(400,"Error while uploading the coverImage file")
+    }
+
+    const user =await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                coverImage: coverImage.url
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password")
+
+    return res.status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user,
+            "coverImage updated successfully"
+        )
+    )
+
+})
 export {
     registerUser,
     loginUser,
     logoutUser,
-    refreshAccessToken
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccountDetails,
+    updateAvatar,
+    updateCoverImage
 }
 
 // Notes --> if in the term asyncHandler(async(req,res) => {} if res have no use then we can use "_" instead of res like asyncHandler(async(req,_) => {
