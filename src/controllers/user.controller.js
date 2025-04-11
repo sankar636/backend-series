@@ -3,16 +3,17 @@ import ApiError from '../utils/ApiError.js'
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from '../utils/FileUpload.js'
 import { ApiResponse } from "../utils/ApiResponse.js";
+import jwt from "jsonwebtoken"
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId)
-        
+
         console.log("User:", user);
         if (!user) {
             throw new ApiError(404, "User not found");
         }
-        
+
         const accessToken = user.generateAccessToken()
         console.log("Access Token:", accessToken);
         const refreshToken = user.generateRefreshToken()
@@ -99,7 +100,7 @@ const registerUser = asyncHandler(async (req, res) => {
 })
 
 // Login controller
-const loginUser = asyncHandler(async (req, res, next) => {
+const loginUser = asyncHandler(async (req, res) => {
     // (12.)
     const { email, username, password } = req.body
     //(13.)
@@ -156,6 +157,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
             )
         )// after all successful set router for login
 })
+//Logout controller
 const logoutUser = asyncHandler(async (req, res) => {
     // after complete of auth.middleware and logout routing now here we have access of user(req.user._id)
     await User.findByIdAndUpdate(  // debut findByIdAndUpdate instead of findById
@@ -179,10 +181,65 @@ const logoutUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, "user logged out successfully", {}))
 })
 
+// creating controller for end point for refreshing the access token
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    try {
+        //(1)
+        const incommingRefreshToken = req.cookie?.refreshToken || req.body.refreshToken
+        // here i give incommingRefreshToken instead of refreshToken because we already have a refreshToken for the user in our database
+        //(2)
+        if (!incommingRefreshToken) {
+            throw new ApiError(401, "Unauthorized Request")
+        }
+        //(3)
+        //Verify this incomming token
+        const decodedIncommingToken = jwt.verify(
+            incommingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        )
+        //(4)
+        // Find the information from DB by decodedIncommingToken (if it matches the refreshtoken stored in the DB then )
+        const user = await User.findById(decodedIncommingToken?._id)
+    
+        if (!user) {
+            throw new ApiError(401, "Invalid RefreshToken")
+        }
+    
+        if (incommingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(401, "RefreshToken is expired or used")
+        }
+    
+        const { accessToken, newRefreshToken } = await generateAccessAndRefreshToken(user._id)
+    
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+    
+        return res.status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json(
+                new ApiResponse(
+                    200,
+                    {
+                        accessToken,
+                        newRefreshToken
+                    },
+                    "Access Token refreshed successfully"
+                )
+            )
+    } catch (error) {
+        throw new ApiError(401, error?.message || "Invalid refresh Token")
+    }
+
+})
+
 export {
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    refreshAccessToken
 }
 
 // Notes --> if in the term asyncHandler(async(req,res) => {} if res have no use then we can use "_" instead of res like asyncHandler(async(req,_) => {
