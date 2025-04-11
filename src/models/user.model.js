@@ -63,7 +63,7 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 }
 
 // To generate Access token
-userSchema.method.generateAccessToken = function () {
+userSchema.methods.generateAccessToken = function () { // debug methods instead of method
    return jwt.sign(
         {
             _id: this._id,
@@ -79,7 +79,7 @@ userSchema.method.generateAccessToken = function () {
 }
 
 // To generate refresh token (In refresh the information was less)
-userSchema.method.generateRefreshToken = function () {
+userSchema.methods.generateRefreshToken = function () { // debug methods instead of method
     return jwt.sign(
         {
             _id: this._id,
