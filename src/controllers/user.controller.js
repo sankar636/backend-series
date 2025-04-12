@@ -167,6 +167,7 @@ const logoutUser = asyncHandler(async (req, res) => {
             $set: {
                 refreshToken: undefined
             }
+            //$unset:{refreshToken:1} // try it
         },
         {
             new: true // it will give new value after return of response
@@ -325,7 +326,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
     if (!avtarLocalPath) {
         throw new ApiError(400, "No avtar was found")
     }
-
+    // Assignment: delete old image 
     const avatar = await uploadOnCloudinary(avtarLocalPath)
 
     if (!avatar.url) {

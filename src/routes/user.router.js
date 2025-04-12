@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { loginUser, logoutUser, refreshAccessToken, registerUser } from '../controllers/user.controller.js'
+import { changeCurrentPassword, getCurrentUser, getUserChannelProfile, getWatchHistory, loginUser, logoutUser, refreshAccessToken, registerUser, updateAccountDetails, updateAvatar, updateCoverImage } from '../controllers/user.controller.js'
 import { upload } from '../middlewares/multer.middleware.js'
 import { verifyJWT } from '../middlewares/auth.middleware.js'
 
@@ -31,4 +31,19 @@ router.route('/logout').post(verifyJWT,logoutUser) // verifyJWT verify before ru
 
 router.route('/refresh-token').post(refreshAccessToken) // for this project there is no need of verifyJWT
 
+router.route("/change-password").post(verifyJWT,changeCurrentPassword)
+
+router.route("/current-user").get(verifyJWT,getCurrentUser) // here we don't change any data so we used get
+
+router.route('/update-account').patch(verifyJWT,updateAccountDetails) //PATCH is used to update part of a resource, not replace the whole thing.
+
+router.route('/avatar').patch(verifyJWT, upload.single("avatar"),updateAvatar)
+// first we use verifyJWT middleware(because first user must be verifyed). then use multer middle ware
+
+router.route('/cover-image').patch(verifyJWT, upload.single("coverImage"),updateCoverImage)
+
+// now for getUserChannelProfile we get it from url(i.e params) --> const { username } = req.params. wo we have to route it on /c/:username
+router.route("/c/:username").get(verifyJWT,getUserChannelProfile)
+
+router.route("/history").get(verifyJWT,getWatchHistory)
 export default router
