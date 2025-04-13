@@ -106,7 +106,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const { email, username, password } = req.body
     //(13.)
     //Option-1 this is for login by either username or password
-    if (!username || !email) {
+    if (!username && !email) {
         throw new ApiError(400, "Enter Username or email")
     }
     //Option-2 this is for login by email
@@ -211,8 +211,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new ApiError(401, "RefreshToken is expired or used")
         }
 
-        const { accessToken, newRefreshToken } = await generateAccessAndRefreshToken(user._id)
-
+        const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id)
+        // console.log(req.cookies); this is for debuging
+        
         const options = {
             httpOnly: true,
             secure: true
@@ -220,13 +221,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
         return res.status(200)
             .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", newRefreshToken, options)
+            .cookie("refreshToken", refreshToken, options)
             .json(
                 new ApiResponse(
                     200,
                     {
                         accessToken,
-                        newRefreshToken
+                        refreshToken
                     },
                     "Access Token refreshed successfully"
                 )
@@ -399,11 +400,14 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     // We'll extract this information from the route parameter (req.params).
     // This allows us to identify and retrieve the specific user's channel data.
     //(1)
+    // console.log(req.params);   // for debugging 
     const { username } = req.params
     //(2)
     if (!username?.trim()) {
         throw new ApiError(400, "username is ")
     }
+    // console.log("USERNAME PARAM:", username); // for debugging
+    
     //(3)
     // option:1
     // const user = User.findById({username})  ....
@@ -470,6 +474,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         }
 
     ])
+    // console.log("CHANNEL:", channel); // for debugging
 
     if (!(channel?.length)) {
         throw new ApiError(400, "Channel is not exist")

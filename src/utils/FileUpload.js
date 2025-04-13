@@ -16,7 +16,7 @@ const uploadOnCloudinary = async (localFilePath) => {
         // upload the file on cloudinary
         const response = await cloudinary.uploader.upload(localFilePath, { resource_type: "auto", folder: "my_uploads" })
         // file has been uploaded successifully
-        console.log("File uploaded successifully on cloudinary", response);
+        console.log("File uploaded successifully on cloudinary", response.url);
         // console.log("Trying to delete:", localFilePath);
         // console.log(fs.existsSync(localFilePath));        
         //(11)
